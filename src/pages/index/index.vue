@@ -30,29 +30,20 @@
 
 
 	export default {
-		data() {
-			return {
-				activeView: 'SongList',
-				config: {
-					voice: 100,
-					playOrder: 'random'
-				}
-			}
-		},
-
 		components: {
 			SongList,
 			PlayerView,
 			PlayerConfig
 		},
 
-		onLoad() {
-			uni.getStorage({
-				key: 'config',
-				success: ({ data }) => {
-					data && this.updateConfig(data);
-				}
-			})
+		beforeCreate() {
+			this.$store.dispatch('restoreConfig');
+		},
+
+		data() {
+			return {
+				activeView: 'PlayerConfig',
+			}
 		},
 
 		methods: {
@@ -63,17 +54,8 @@
 			 * @param {Function} fail fail callback function
 			 */
 			updateConfig(config, success, fail) {
-				if (config !== undefined && config instanceof Object) {
-					for (const key in config) {
-						this.config[key] = config[key];
-					}
-
-					uni.setStorage({
-						key: 'config',
-						data: this.config,
-						success,
-						fail
-					})
+				if (config && config instanceof Object) {
+					this.$store.dispatch('updateConfig', config, success, fail)
 				}
 			},
 
@@ -88,15 +70,15 @@
 	}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 	.container {
-		width: 100%;
-		height: 100%;
+		width: 95%;
+		height: 96%;
 		position: relative;
-		background: #413153;
-		background: 
-			linear-gradient(90deg, #372949 0%, #28173d 5%, #28173d 95%, #372949 100%);
-		
+		border-radius: 40rpx;
+		background: #1d0f2f;
+		overflow: hidden;
+
 		.wrapper {
 			width: 100%;
 			height: 100%;

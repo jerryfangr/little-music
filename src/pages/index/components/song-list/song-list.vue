@@ -1,11 +1,18 @@
 <template>
   <view class="container">
     <!-- icon title start -->
-    <icon-font iconName="infinity"></icon-font>
+    <view class="icon icon-bubble-background">
+      <icon-font iconName="infinity"></icon-font>
+    </view>
     <!-- icon title end -->
 
     <scroll-view class="song-list" scroll-y>
-      <view class="song-item" v-for="(song, index) in songList" :key="index">
+      <view 
+        class="song-item" 
+        v-for="(song, index) in songList" 
+        :key="index"
+        @click="chooseSong(index)"  
+      >
         {{song.name}}
       </view>
     </scroll-view>
@@ -55,15 +62,23 @@ export default {
     width: 100%;
     height: 100%;
 
-    & /deep/ .iconfont {
-      color: #980baf;
-      font-size: 230rpx;
-      text-shadow:16rpx 16rpx 7rpx #6f14ac;
+    .icon {
+      @include flex-layout(center, center, column);
+      height: 40%;
+      width: 100%;
+
+      & /deep/ .iconfont {
+        color: #980baf;
+        font-size: 220rpx;
+        // text-shadow:14rpx 14rpx 7rpx #6f14ac;
+        text-shadow: 0 0 10rpx #7c11c4;
+      }
     }
+
 
     .song-list {
       width: 100%;
-      height: 75%;
+      height: 60%;
 
       .song-item {
         margin: 0 auto;
