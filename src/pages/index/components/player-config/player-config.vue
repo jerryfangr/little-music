@@ -9,7 +9,7 @@
 
           <view 
             class="bar-button"
-            :style="{'margin-bottom': (config.value - 50) + '%'}"
+            :style="{'bottom': config.value + '%'}"
             @click="changeItem(index)"
             @touchmove="updateBarValue($event, index)"
           >
@@ -21,13 +21,13 @@
         </view>
       </view>
 
-      <view class="bar-name">{{ configName }}</view>
+      <view class="bar-name">{{ configInfo }}</view>
     </view>
     <!-- end -->
 
     <!-- start -->
     <view class="operate">
-      <button class="save"></button>
+      <button class="save" @click="saveConfig">save</button>
     </view>
     <!-- end -->
 
@@ -65,8 +65,9 @@ export default {
   },
 
   computed: {
-    configName() {
-      return this.configItems[this.currentConfig].name;
+    configInfo() {
+      let item = this.configItems[this.currentConfig];
+      return item.name + ': ' + item.value;
     }
   },
 
@@ -85,17 +86,22 @@ export default {
     },
 
     updateBarValue(event, index) {
-      this.changeItem(index);
+      if (index !== this.currentConfig) {
+        this.changeItem(index);
+      }
       let currentX = event.touches[0].pageX;
 			let currentY = event.touches[0].pageY;
       let lastX = this.lastX || currentX;
       let lastY = this.lastY || currentY;
 			let tx = currentX - lastX;
 			let ty = currentY - lastY;
+      let value = ty >= 0 ? -1 : 1;
+
 			if (Math.abs(tx) < 20) {
         let configItem = this.configItems[this.currentConfig];
-				if (configItem.value > 0 && configItem.value < 100) {
-          configItem.value += ty;
+
+				if (configItem.value >= 0 && configItem.value <= 100) {
+          configItem.value += value;
           configItem.value = configItem.value > 100 ? 100 : configItem.value;
           configItem.value = configItem.value < 0 ? 0 : configItem.value;
 				}
@@ -131,15 +137,14 @@ export default {
           border-radius: 20rpx;
           background: #342648;
           box-shadow: 0 0 5rpx 0 #4a3864;
+          position: relative;
           @include flex-center();
 
           .bar-value {
             align-self: flex-end;
             width: 100%;
-            // height: 50%;
             border-radius: 20rpx;
             background: linear-gradient(0deg, #881afc 0%, #8f1bec 20%, #c3227f 100%);
-            transition: height .3s;
           }
 
           .bar-button {
@@ -148,9 +153,12 @@ export default {
             padding: 8rpx 0;
             background: #ffffff;
             border-radius: 10rpx;
-            box-shadow: 0 10rpx 20rpx 0 rgba(209, 37, 160, 0.7),
-                        0 55rpx 10rpx 0 rgba(209, 37, 160, 0.4);
+            box-shadow: 0 0 30rpx 1rpx rgba(209, 37, 160, 0.8);
             position: absolute;
+            left: 50%;
+            bottom: 50%;
+            transform: translate(-50%, 50%);
+
             @include flex-layout(space-evenly, center, column);
 
             .icon-line {
@@ -177,6 +185,17 @@ export default {
     .operate {
       width: 100%;
       height: 30%;
+      @include flex-center();
+
+      .save {
+        color: #fff;
+        background: linear-gradient(90deg, #c3227f 0%, #881afc 100%);
+        width: 90%;
+        font-size: 38rpx;
+        font-size: 600;
+        padding: 17rpx 0;
+        border-radius: 40rpx;
+      }
     }
 
   }
