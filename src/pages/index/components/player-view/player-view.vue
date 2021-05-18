@@ -14,5 +14,4 @@ export default {
   .container {
     box-shadow:inset 0 0 50rpx 20rpx #3d2c53;
   }
-
 </style>

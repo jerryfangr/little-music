@@ -4,19 +4,19 @@
 			<song-list
 				v-if="activeView === 'SongList'"
 				:updateConfig="updateConfig"
-				:switchView="switchView"
+				@switchView="changeView"
 			></song-list>
 
 			<player-view
 				v-if="activeView === 'PlayerView'"
 				:updateConfig="updateConfig"
-				:switchView="switchView"
+				@switchView="changeView"
 			></player-view>
 
 			<player-config
 				v-if="activeView === 'PlayerConfig'"
 				:updateConfig="updateConfig"
-				:switchView="switchView"
+				@switchView="changeView"
 			></player-config>
 
 		</div>
@@ -63,7 +63,7 @@
 			 * * switch view component
 			 * @param {Object} config
 			 */
-			switchView(viewName) {
+			changeView(viewName) {
 				this.activeView = viewName
 			}
 		}
@@ -73,7 +73,7 @@
 <style lang="scss" scoped>
 	.container {
 		width: 95%;
-		height: 96%;
+		height: 98%;
 		position: relative;
 		border-radius: 40rpx;
 		background: #1d0f2f;

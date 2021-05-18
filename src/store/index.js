@@ -35,7 +35,7 @@ const store = new Vuex.Store({
         key: 'config',
         success: ({ data }) => {
           context.commit('updateConfig', data);
-          success(data);
+          success?.(data);
         },
         fail
       })
