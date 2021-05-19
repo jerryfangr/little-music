@@ -19,7 +19,15 @@
       <view class="author"></view>
     </view>
 
-    <view class="operate"></view>
+    <view class="operate">
+      <view class="play"></view>
+
+      <view class="pre"></view>
+
+      <view class="next"></view>
+      
+      <view class="config"></view>
+    </view>
   </view>
 </template>
 
