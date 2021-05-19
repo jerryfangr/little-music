@@ -118,6 +118,7 @@ export default {
   .container {
     width: 100%;
     height: 100%;
+    background: #1d0f2f;
 
     .config-bar {
       width: 100%;

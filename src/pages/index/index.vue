@@ -1,6 +1,5 @@
 <template>
 	<view class="container">
-		<div class="wrapper">
 			<song-list
 				v-if="activeView === 'SongList'"
 				:updateConfig="updateConfig"
@@ -18,8 +17,6 @@
 				:updateConfig="updateConfig"
 				@switchView="changeView"
 			></player-config>
-
-		</div>
 	</view>
 </template>
 
@@ -42,7 +39,7 @@
 
 		data() {
 			return {
-				activeView: 'PlayerConfig',
+				activeView: 'PlayerView',
 			}
 		},
 
@@ -76,13 +73,7 @@
 		height: 98%;
 		position: relative;
 		border-radius: 40rpx;
-		background: #1d0f2f;
 		overflow: hidden;
-
-		.wrapper {
-			width: 100%;
-			height: 100%;
-		}
 	}
 
 	
