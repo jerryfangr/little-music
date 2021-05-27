@@ -1,22 +1,25 @@
 <template>
 	<view class="container">
-			<song-list
-				v-if="activeView === 'SongList'"
-				:updateConfig="updateConfig"
-				@switchView="changeView"
-			></song-list>
+		<song-list
+			v-if="activeView === 'SongList'"
+			:updateConfig="updateConfig"
+			@switchView="changeView"
+			key="SongList"
+		></song-list>
 
-			<player-view
-				v-if="activeView === 'PlayerView'"
-				:updateConfig="updateConfig"
-				@switchView="changeView"
-			></player-view>
+		<player-view
+			v-if="activeView === 'PlayerView'"
+			:updateConfig="updateConfig"
+			@switchView="changeView"
+			key="PlayerView"
+		></player-view>
 
-			<player-config
-				v-if="activeView === 'PlayerConfig'"
-				:updateConfig="updateConfig"
-				@switchView="changeView"
-			></player-config>
+		<player-config
+			v-if="activeView === 'PlayerConfig'"
+			:updateConfig="updateConfig"
+			@switchView="changeView"
+			key="PlayerConfig"
+		></player-config>
 	</view>
 </template>
 
@@ -40,6 +43,16 @@
 		data() {
 			return {
 				activeView: 'PlayerView',
+				history: {
+					routers: ['PlayerView'],
+					index: 0,
+					get currentRouter() {
+						return this.routers[this.index]
+					},
+					set currentRouter(routerName) {
+						this.routers[this.index] = routerName;
+					},
+				}
 			}
 		},
 
@@ -57,11 +70,24 @@
 			},
 
 			/**
-			 * * switch view component
+			 * * switch view component(fake router)
 			 * @param {Object} config
 			 */
 			changeView(viewName) {
-				this.activeView = viewName
+				// history back
+				if (viewName === 'back' && (this.history.index - 1) >= 0) {
+					this.history.index--;
+					this.activeView = this.history.currentRouter;
+				// history next
+				} else if (viewName === 'next' && (this.history.index + 1) < this.history.routers.length) {
+					this.history.index++;
+					this.activeView = this.history.currentRouter;
+				// add router
+				} else {
+					this.activeView = viewName;
+					this.history.index++;
+					this.history.currentRouter = this.activeView;
+				}
 			}
 		}
 	}
@@ -74,8 +100,6 @@
 		position: relative;
 		border-radius: 40rpx;
 		overflow: hidden;
+    animation: slideInUp .6s ease-out 0s;
 	}
-
-	
-
 </style>
