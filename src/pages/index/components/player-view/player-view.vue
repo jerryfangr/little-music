@@ -1,53 +1,100 @@
 <template>
   <view class="container">
-    <view class="cover"></view>
+    <view :class="{'cover': true, 'play': status === 'playing' }">
+        <view class="iconfont icon-music-1" v-if="status === 'playing'"></view>
+        <view class="iconfont icon-music-2" v-if="status === 'playing'"></view>
+    </view>
 
+    <!-- start -->
     <view :class="{'process': true, 'play': status === 'playing' }">
       <view class="bar-value"></view>
 
       <view class="bar-button"></view>
 
-      <view class="time">
-        <view class="current-time"></view>
-        <view class="end-time"></view>
-      </view>
+      <view class="time current-time">0:32</view>
+      <view class="time end-time">3:25</view>
     </view>
+    <!-- end -->
 
-    <view class="{'title': true, 'play': status === 'playing' }">
+    <!-- start -->
+    <view :class="{'title': true, 'play': status === 'playing' }">
       <view class="song-name">Ali LA LA</view>
-
       <view class="author">Apple, Trect</view>
-
-      <view class="lyric">this is lyric</view>
+      <view class="lyric">This is lyric</view>
     </view>
+    <!-- end -->
 
+
+    <!-- start -->
     <view :class="{'operate': true, 'play': status === 'playing' }">
-      <view class="play">
 
+      <view class="play" @click="switchStatus">
+        <view class="iconfont icon-stop" v-if="status === 'playing'"></view>
+        <view class="iconfont icon-play" v-else></view>
+
+        <view class="bg-circle c-blue"></view>
+        <view class="bg-circle c-dpurple"></view>
+        <view class="bg-circle c-red"></view>
+        <view class="bg-circle c-purple"></view>
+        <view class="bg-circle c-pink"></view>
+        <view class="bg-circle c-dblue"></view>
       </view>
 
-      <view class="pre"></view>
+      <view class="circle-operate pre">
+        <view class="iconfont icon-previous"></view>
+      </view>
 
-      <view class="next"></view>
+      <view class="circle-operate next">
+        <view class="iconfont icon-next"></view>
+      </view>
 
-      <view class="config"></view>
+      <view class="circle-operate config" @click="$emit('switchView', 'PlayerConfig')">
+        <view class="iconfont icon-set"></view>
+      </view>
 
-      <view class="mode"></view>
+      <view class="circle-operate mode" @click="switchMode">
+        <view class="iconfont icon-loop" v-if="mode === 'loop'"></view>
+        <view class="iconfont icon-random" v-if="mode === 'random'"></view>
+        <view class="iconfont icon-infinity" v-if="mode === 'infinity'"></view>
+      </view>
+
     </view>
+    <!-- end -->
   </view>
 </template>
 
 <script>
 export default {
+  props: {
+    updateConfig: {
+      type: Function,
+      required: true
+    }
+  },
+
   data() {
     return {
-      status: 'playing'
+      status: 'playing',
+      mode: 'infinity'
     }
   },
 
   methods: {
     switchStatus() {
       this.status = this.status === 'choose' ? 'playing' : 'choose';
+    },
+
+    switchMode() {
+      switch (this.mode) {
+        case 'loop':
+          this.mode = 'random'
+          break;
+        case 'random':
+          this.mode = 'infinity'
+          break;
+        default:
+          this.mode = 'loop'
+      }
     }
   },
 }
@@ -58,31 +105,111 @@ export default {
     width: 100%;
     height: 100%;
     padding: 30rpx;
-    background: #1d0f2f;
+    background: #281d38;
+    background: linear-gradient(0deg, #281d38 0%, #22192e 30%, #1e1629 100%);    
     box-shadow: inset 0 0 40rpx 10rpx #3d2c53;
     color: #fff;
     @include flex-layout(flex-start, center, column);
 
-
     .cover {
+      margin-top: 50rpx;
       width: 550rpx;
-      height: 550rpx;
-      background: rgb(196, 169, 19);
+      height: 520rpx;
+      border-radius: 50rpx;
+      background: #000;
+
+      &.play {
+        color: #de2398;
+        font-size: 250rpx;
+        background: #29193b;
+        box-shadow: 
+          inset 0 0 70rpx 20rpx #3f295a,
+          0 0 40rpx 1rpx #0e0818;
+        position: relative;
+        
+        .iconfont {
+          position: absolute;
+          text-shadow: 2rpx 0 30rpx #8604ad;
+
+          &.icon-music-2 {
+            left: 10%;
+            top: 20%;
+          }
+          &.icon-music-1 {
+            right: 15%;
+            top: 40%;
+          }
+        }
+      }
+
     }
 
     .process {
       width: 550rpx;
-      height: 0;
-      margin: 20rpx 0;
+      margin: 77rpx 0;
+      display: none;
+      position: relative;
+      
       &.play {
-        height: 30rpx;
+        display: block;
+        height: 10rpx;
+        border-radius: 10rpx;
+        background: #362649;
+
+        .bar-value {
+          height: 100%;
+          width: 30%;
+          background: linear-gradient(90deg, #63209b 0%, #f728a8 100%);
+        }
+
+        .bar-button {
+          width: 38rpx;
+          height: 38rpx;
+          border-radius: 50%;
+          box-shadow: 0 0 20rpx 1rpx #f728a8;
+          background: #ffffff;
+          position: absolute;
+          top: -14rpx;
+          left: calc(30% - 19rpx);
+
+          &::after {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20rpx;
+            height: 20rpx;
+            border-radius: 50%;
+            background: #e92092;
+          }
+        }
+
+        .time {
+          color: #6c6377;
+          font-size: 22rpx;
+          font-weight: 600;
+          position: absolute;
+          top: 150%;
+
+          &.current-time {
+            left: 0;
+          }
+
+          &.end-time {
+            right: 0;
+          }
+        }
       }
 
-      background: rgb(231, 84, 84);
     }
 
     .title {
+      margin-top: 35rpx;
+
       .song-name {
+        margin-top: 0rpx;
         font-size: 40rpx;
         font-weight: 600;
       }
@@ -94,6 +221,8 @@ export default {
 
       .lyric {
         display: none;
+        font-size: 30rpx;
+        font-weight: 600;
       }
 
       &.play {
@@ -108,20 +237,159 @@ export default {
     }
 
     .operate {
+      width: 600rpx;
+      height: 310rpx;
+      margin-top: 50rpx;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+      @include flex-center();
+      transition: all .5s;
+
+      &.play {
+        margin-top: 50rpx;
+
+        .play {
+          width: 200rpx;
+          height: 200rpx;
+          font-size: 60rpx;
+
+          .bg-circle {
+            transition: box-shadow .5s;
+
+            &.c-blue {
+              box-shadow: 0 0 35rpx 2rpx #4b5dfc;
+            }
+            &.c-dpurple {
+              box-shadow: 0 0 35rpx 2rpx #831af9;
+            }
+            &.c-red {
+              box-shadow: 0 0 35rpx 2rpx #f7277e;
+            }
+            &.c-purple {
+              box-shadow: 0 0 35rpx 2rpx #ae1ecb;
+            }
+            &.c-pink {
+              box-shadow: 0 0 35rpx 2rpx #d523a3;
+            }
+            &.c-dblue {
+              box-shadow: 0 0 40rpx 3rpx #5140ff;
+            }
+          }
+        }
+
+        .pre {
+          left: 12%;
+        }
+
+        .next {
+          right: 12%;
+        }
+
+        .config {
+          top: 50%;
+          transform: translateY(-50%);
+          left: -6%;
+        }
+        
+        .mode {
+          top: 50%;
+          transform: translateY(-50%);
+          right: -6%;
+        }
+      }
+
       .play {
-        
+        width: 250rpx;
+        height: 250rpx;
+        border-radius: 50%;
+        position: relative;
+        background: #1c0f2e;
+        font-size: 80rpx;
+        @include flex-center();
+        transition: all .5s;
+
+        .bg-circle {
+          position: absolute;
+          border-radius: 50%;
+          z-index: -1;
+
+          &.c-blue {
+            background: #4b5dfc;
+            width: 109%;
+            height: 109%;
+            left: -12%;
+            top: -8%;
+            box-shadow: 0 0 20rpx 1rpx #1c0f2e;
+          }
+          &.c-dpurple {
+            background: #831af9;
+            width: 90%;
+            height: 98%;
+            left: -9%;
+            bottom: -3%;
+          }
+          &.c-red {
+            background: #f7277e;
+            width: 108%;
+            height: 100%;
+            right: -10%;
+            bottom: -10%;
+          }
+          &.c-purple {
+            background: #ae1ecb;
+            width: 100%;
+            height: 90%;
+            right: -8%;
+            top: -1%;
+          }
+          &.c-pink {
+            background: #d523a3;
+            width: 100%;
+            height: 90%;
+            right: -4%;
+            bottom: -4%;
+          }
+          &.c-dblue {
+            background: #5140ff;
+            width: 90%;
+            height: 90%;
+            left: -3%;
+            top: -3%;
+          }
+        }
       }
+
+      .circle-operate {
+        width: 100rpx;
+        height: 100rpx;
+        border-radius: 50%;
+        background: rgba(93, 70, 122, .5);
+        @include flex-center();
+        position: absolute;
+        transition: all .5s;
+      }
+
       .pre {
-        
+        left: 0;
       }
+
       .next {
-        
+        right: 0;
       }
+
       .config {
-        
+        top: 95%;
+        left: 10%;
       }
+      
       .mode {
-        
+        top: 95%;
+        right: 10%;
+
+        .icon-infinity {
+          font-size: 26rpx;
+        }
       }
     }
   }

@@ -1,5 +1,13 @@
 <template>
-  <view class="container">
+  <view class="container animate__animated animate__slideInUp">
+    <view 
+      class="back" 
+      decode='true'
+      @click="$emit('switchView', 'back')"
+      >
+      {{'&lt;'}}
+    </view>
+
     <!-- start -->
     <view class="config-bar">
       <view class="bar-list">
@@ -38,8 +46,7 @@
 export default {
   props: {
     updateConfig: {
-      type: Function,
-      required: true
+      type: Function
     }
   },
 
@@ -119,6 +126,18 @@ export default {
     width: 100%;
     height: 100%;
     background: #1d0f2f;
+    position: relative;
+    animation: slideInUp .6s ease-out 0s;
+
+    .back {
+      position: absolute;
+      top: 10rpx;
+      left: 25rpx;
+      color: #fff;
+      font-size: 52rpx;
+      font-weight: 600;
+      text-shadow: 1rpx 1rpx 5rpx #fff;
+    }
 
     .config-bar {
       width: 100%;
