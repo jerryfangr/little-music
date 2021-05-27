@@ -1,4 +1,6 @@
 <script>
+	import 'animate.css';
+
 	export default {
 		onLaunch: function() {
 			console.log('App Launch')
