@@ -158,6 +158,7 @@ export default {
     box-shadow: inset 0 0 40rpx 10rpx #3d2c53;
     color: #fff;
     @include flex-layout(flex-start, center, column);
+    animation: slideInLeft .6s ease-out 0s;
 
     .cover {
       margin-top: 50rpx;
@@ -167,6 +168,7 @@ export default {
       background: #000;
 
       &.play {
+        animation: fadeIn .6s ease-out 0s;
         color: #de2398;
         font-size: 250rpx;
         background: #29193b;
@@ -203,6 +205,7 @@ export default {
         height: 10rpx;
         border-radius: 10rpx;
         background: #362649;
+        animation: bounceIn .5s ease-out 0s;
 
         .bar-value {
           height: 100%;
@@ -240,7 +243,7 @@ export default {
           font-size: 22rpx;
           font-weight: 600;
           position: absolute;
-          top: 150%;
+          top: 300%;
 
           &.current-time {
             left: 0;
