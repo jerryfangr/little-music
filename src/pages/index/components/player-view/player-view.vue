@@ -6,10 +6,17 @@
     </view>
 
     <!-- start -->
-    <view :class="{'process': true, 'play': status === 'playing' }">
-      <view class="bar-value"></view>
+    <view 
+      :class="{'process': true, 'play': status === 'playing' }"
+      @click="jumpProcess"
+    >
+      <view class="bar-value" :style="{'width': processPercent}"></view>
 
-      <view class="bar-button"></view>
+      <view 
+        class="bar-button"
+        @touchmove="updateBarValue"
+        :style="{'left': processPercent}"
+      ></view>
 
       <view class="time current-time">0:32</view>
       <view class="time end-time">3:25</view>
@@ -75,7 +82,8 @@ export default {
   data() {
     return {
       status: 'playing',
-      mode: 'infinity'
+      mode: 'infinity',
+      process: 0
     }
   },
 
@@ -95,6 +103,46 @@ export default {
         default:
           this.mode = 'loop'
       }
+    },
+
+    jumpProcess(event) {
+      let x = event.touches[0].clientX - 55;
+      x = x < 0 ? 0 : x;
+      this.process = x / 300 * 275;
+    },
+
+    updateBarValue(event) {
+      event.stopPropagation();
+      const MAX_PROCESS = 275;
+      let currentX = event.touches[0].pageX;
+			let currentY = event.touches[0].pageY;
+			let tx = currentX - (this.lastX || currentX);
+			let ty = currentY - (this.lastY || currentY);
+
+			if (
+        Math.abs(ty) < 20 
+        && this.process >= 0 
+        && this.process <= MAX_PROCESS
+      ) {
+        let newValue = this.process + tx;
+        newValue = newValue > MAX_PROCESS ? MAX_PROCESS : newValue;
+        newValue = newValue < 0 ? 0 : newValue;
+
+        if (newValue !== this.process) {
+          this.process = newValue;
+        }
+			}
+
+			this.lastX = currentX;
+			this.lastY = currentY;
+    }
+  },
+
+
+  computed: {
+    processPercent() {
+      let value = this.process / 275 * 100;
+      return value.toFixed(2) + '%';
     }
   },
 }
@@ -158,7 +206,7 @@ export default {
 
         .bar-value {
           height: 100%;
-          width: 30%;
+          transition: width 30ms;
           background: linear-gradient(90deg, #63209b 0%, #f728a8 100%);
         }
 
@@ -170,7 +218,8 @@ export default {
           background: #ffffff;
           position: absolute;
           top: -14rpx;
-          left: calc(30% - 19rpx);
+          margin-left: -19rpx;
+          transition: left 30ms;
 
           &::after {
             content: '';
