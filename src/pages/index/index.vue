@@ -100,6 +100,5 @@
 		position: relative;
 		border-radius: 40rpx;
 		overflow: hidden;
-    animation: slideInUp .6s ease-out 0s;
 	}
 </style>
