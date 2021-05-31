@@ -1,24 +1,20 @@
 <template>
 	<view class="container">
 		<song-list
-			v-if="activeView === 'SongList'"
 			:updateConfig="updateConfig"
 			@switchView="changeView"
-			key="SongList"
 		></song-list>
 
 		<player-view
-			v-if="activeView === 'PlayerView'"
+			v-if="openPlayer"
 			:updateConfig="updateConfig"
 			@switchView="changeView"
-			key="PlayerView"
 		></player-view>
 
 		<player-config
-			v-if="activeView === 'PlayerConfig'"
+			v-if="openConfig"
 			:updateConfig="updateConfig"
 			@switchView="changeView"
-			key="PlayerConfig"
 		></player-config>
 	</view>
 </template>
@@ -27,7 +23,6 @@
 	import SongList from './components/song-list/song-list.vue';
 	import PlayerView from './components/player-view/player-view.vue';
 	import PlayerConfig from './components/player-config/player-config.vue';
-
 
 	export default {
 		components: {
@@ -42,15 +37,27 @@
 
 		data() {
 			return {
-				activeView: 'PlayerView',
-				history: {
-					routers: ['PlayerView'],
+				openConfig: false,
+				openPlayer: false,
+
+				appHistory: {
+					routers: ['SongList'],
 					index: 0,
 					get currentRouter() {
 						return this.routers[this.index]
 					},
+					get preRouter() {
+						return this.routers[this.index-1]
+					},
+					get nextRouter() {
+						return this.routers[this.index+1]
+					},
 					set currentRouter(routerName) {
 						this.routers[this.index] = routerName;
+					},
+					addRouter(routerName) {
+						this.index++;
+						this.currentRouter = routerName;
 					},
 				}
 			}
@@ -74,20 +81,23 @@
 			 * @param {Object} config
 			 */
 			changeView(viewName) {
-				// history back
-				if (viewName === 'back' && (this.history.index - 1) >= 0) {
-					this.history.index--;
-					this.activeView = this.history.currentRouter;
-				// history next
-				} else if (viewName === 'next' && (this.history.index + 1) < this.history.routers.length) {
-					this.history.index++;
-					this.activeView = this.history.currentRouter;
-				// add router
-				} else {
-					this.activeView = viewName;
-					this.history.index++;
-					this.history.currentRouter = this.activeView;
-				}
+				// set config pop-up windows
+				if (viewName === 'PlayerConfig') {
+					this.openConfig = !this.openConfig;
+					this.openConfig && this.appHistory.addRouter(viewName);
+				// set player pop-up windows
+				} else if (viewName === 'PlayerView') {
+					this.openPlayer = !this.openPlayer;
+					this.openPlayer && this.appHistory.addRouter(viewName);
+				// back to previous view
+				} else if (viewName === 'back' && (this.appHistory.index - 1) >= 0) {
+					this.changeView(this.appHistory.currentRouter);
+					this.appHistory.index--;
+				// open next view in history
+				} else if (viewName === 'next' && (this.appHistory.index + 1) < this.appHistory.routers.length) {
+					this.appHistory.index++;
+					this.changeView(this.appHistory.currentRouter);
+				} 
 			}
 		}
 	}

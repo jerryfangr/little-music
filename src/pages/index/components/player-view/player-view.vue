@@ -1,72 +1,88 @@
 <template>
   <view class="container">
-    <view :class="{'cover': true, 'play': status === 'playing' }">
-        <view class="iconfont icon-music-1" v-if="status === 'playing'"></view>
-        <view class="iconfont icon-music-2" v-if="status === 'playing'"></view>
-    </view>
+    <view :class="{'wrapper': true, 'appear': appear, 'leave': !appear}">
 
-    <!-- start -->
-    <view 
-      :class="{'process': true, 'play': status === 'playing' }"
-      @click="jumpProcess"
-    >
-      <view class="bar-value" :style="{'width': processPercent}"></view>
-
+      <!-- start -->
       <view 
-        class="bar-button"
-        @touchmove="updateBarValue"
-        :style="{'left': processPercent}"
-      ></view>
+        class="back" 
+        decode='true'
+        @click="close"
+      >
+        {{'&lt;'}}
+      </view>
+      <!-- end -->
 
-      <view class="time current-time">0:32</view>
-      <view class="time end-time">3:25</view>
+      <!-- start -->
+      <view :class="{'cover': true, 'play': status === 'playing' }">
+          <view class="iconfont icon-music-1" v-if="status === 'playing'"></view>
+          <view class="iconfont icon-music-2" v-if="status === 'playing'"></view>
+      </view>
+      <!-- end -->
+
+      <!-- start -->
+      <view 
+        :class="{'process': true, 'play': status === 'playing' }"
+        @click="jumpProcess"
+      >
+        <view class="bar-value" :style="{'width': processPercent}"></view>
+
+        <view 
+          class="bar-button"
+          @touchmove="updateBarValue"
+          :style="{'left': processPercent}"
+        ></view>
+
+        <view class="time current-time">{{ currentTime }}</view>
+        <view class="time end-time">{{ formatTime(songDuration) }}</view>
+      </view>
+      <!-- end -->
+
+      <!-- start -->
+      <view :class="{'title': true, 'play': status === 'playing' }">
+        <view class="song-name">{{ song.name }}</view>
+        <view class="author">{{ song.singer }}</view>
+        <view class="lyric">This is lyric</view>
+      </view>
+      <!-- end -->
+
+
+      <!-- start -->
+      <view :class="{'operate': true, 'play': status === 'playing' }">
+
+        <view class="play-button" @click="switchStatus">
+          <view class="iconfont icon-stop" v-if="status === 'playing'"></view>
+          <view class="iconfont icon-play" v-else></view>
+
+          <view class="bg-circle c-blue"></view>
+          <view class="bg-circle c-dpurple"></view>
+          <view class="bg-circle c-red"></view>
+          <view class="bg-circle c-purple"></view>
+          <view class="bg-circle c-pink"></view>
+          <view class="bg-circle c-dblue"></view>
+        </view>
+
+        <view class="circle-operate pre-button" @click="changeSong('previous')">
+          <view class="iconfont icon-previous"></view>
+        </view>
+
+        <view class="circle-operate next-button" @click="changeSong('next')">
+          <view class="iconfont icon-next"></view>
+        </view>
+
+        <view class="circle-operate config-button" @click="$emit('switchView', 'PlayerConfig')">
+          <view class="iconfont icon-set"></view>
+        </view>
+
+        <view class="circle-operate mode-button" @click="switchMode">
+          <view class="iconfont icon-loop" v-if="mode === 'loop'"></view>
+          <view class="iconfont icon-random" v-if="mode === 'random'"></view>
+          <view class="iconfont icon-infinity" v-if="mode === 'infinity'"></view>
+        </view>
+
+      </view>
+      <!-- end -->
+
     </view>
-    <!-- end -->
-
-    <!-- start -->
-    <view :class="{'title': true, 'play': status === 'playing' }">
-      <view class="song-name">Ali LA LA</view>
-      <view class="author">Apple, Trect</view>
-      <view class="lyric">This is lyric</view>
-    </view>
-    <!-- end -->
-
-
-    <!-- start -->
-    <view :class="{'operate': true, 'play': status === 'playing' }">
-
-      <view class="play" @click="switchStatus">
-        <view class="iconfont icon-stop" v-if="status === 'playing'"></view>
-        <view class="iconfont icon-play" v-else></view>
-
-        <view class="bg-circle c-blue"></view>
-        <view class="bg-circle c-dpurple"></view>
-        <view class="bg-circle c-red"></view>
-        <view class="bg-circle c-purple"></view>
-        <view class="bg-circle c-pink"></view>
-        <view class="bg-circle c-dblue"></view>
-      </view>
-
-      <view class="circle-operate pre">
-        <view class="iconfont icon-previous"></view>
-      </view>
-
-      <view class="circle-operate next">
-        <view class="iconfont icon-next"></view>
-      </view>
-
-      <view class="circle-operate config" @click="$emit('switchView', 'PlayerConfig')">
-        <view class="iconfont icon-set"></view>
-      </view>
-
-      <view class="circle-operate mode" @click="switchMode">
-        <view class="iconfont icon-loop" v-if="mode === 'loop'"></view>
-        <view class="iconfont icon-random" v-if="mode === 'random'"></view>
-        <view class="iconfont icon-infinity" v-if="mode === 'infinity'"></view>
-      </view>
-
-    </view>
-    <!-- end -->
   </view>
 </template>
 
@@ -76,20 +92,76 @@ export default {
     updateConfig: {
       type: Function,
       required: true
-    }
+    },
   },
 
   data() {
     return {
-      status: 'playing',
+      song: {},
+      status: 'choose',
       mode: 'infinity',
-      process: 0
+      process: 0,
+      MAX_PROCESS: 275,
+      appear: true,
+      audioContext: null,
+      currentTime: '0:00',
+      songDuration: 0,
     }
   },
 
+  created() {
+    this.restoreConfig();
+    this.song = this.$store.getters.currentSong;
+  },
+
+  beforeMount() {
+    this.audioContext = this.audioContext || uni.createInnerAudioContext();
+    this.audioContext.autoplay = true;
+    this.audioContext.src = 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-hello-uniapp/2cc220e0-c27a-11ea-9dfb-6da8e309e0d8.mp3';
+    
+    this.audioContext.onCanplay(() => {
+      // loop=true  volume=0.5
+    })
+
+    this.audioContext.onPlay(() => {
+      this.songDuration = Math.ceil(this.audioContext.duration);
+    });
+
+    this.audioContext.onTimeUpdate(() => {
+      let currentTime = Math.ceil(this.audioContext.currentTime);
+      let newTime = this.formatTime(currentTime);
+      if (newTime !== this.currentTime) {
+        let process = currentTime / this.songDuration * this.MAX_PROCESS;
+        this.process = process.toFixed(2);
+        this.currentTime = newTime;
+      }
+    });
+
+    this.audioContext.onEnded((res) => {
+
+    });
+
+    this.audioContext.onError((res) => {
+      console.log(res.errMsg);
+      console.log(res.errCode);
+    });
+
+    this.audioContext.pause();
+  },
+
   methods: {
+    restoreConfig() {
+      let storeConfig = this.$store.state.config;
+      this.mode = storeConfig.playMode;
+    },
+
     switchStatus() {
       this.status = this.status === 'choose' ? 'playing' : 'choose';
+      if (this.status === 'choose') {
+        this.audioContext.pause();
+      } else {
+        this.audioContext && this.audioContext.paused && this.audioContext.play();
+      }
     },
 
     switchMode() {
@@ -103,17 +175,26 @@ export default {
         default:
           this.mode = 'loop'
       }
+
+      this.updateConfig({playMode: this.mode});
+    },
+
+    changeSong(direction) {
+      let songIndex = this.$store.state.songs.songIndex;
+      let index = direction === 'next' ? songIndex + 1 : songIndex - 1;
+      this.$store.commit('chooseSong', index);
     },
 
     jumpProcess(event) {
       let x = event.touches[0].clientX - 55;
       x = x < 0 ? 0 : x;
       this.process = x / 300 * 275;
+
+      // seek(position)  跳转到指定位置，单位 s
     },
 
     updateBarValue(event) {
       event.stopPropagation();
-      const MAX_PROCESS = 275;
       let currentX = event.touches[0].pageX;
 			let currentY = event.touches[0].pageY;
 			let tx = currentX - (this.lastX || currentX);
@@ -122,10 +203,10 @@ export default {
 			if (
         Math.abs(ty) < 20 
         && this.process >= 0 
-        && this.process <= MAX_PROCESS
+        && this.process <= this.MAX_PROCESS
       ) {
         let newValue = this.process + tx;
-        newValue = newValue > MAX_PROCESS ? MAX_PROCESS : newValue;
+        newValue = newValue > this.MAX_PROCESS ? this.MAX_PROCESS : newValue;
         newValue = newValue < 0 ? 0 : newValue;
 
         if (newValue !== this.process) {
@@ -135,14 +216,36 @@ export default {
 
 			this.lastX = currentX;
 			this.lastY = currentY;
+    },
+
+    close () {
+      this.appear = false;
+      setTimeout(() => {
+        this.$emit('switchView', 'back')
+      }, 500)
+    },
+
+    formatTime(time) {
+      let minutes = Math.floor(time / 60) ;
+      let seconds = time - (60 * minutes);
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+      return minutes + ':' + seconds;
     }
   },
-
 
   computed: {
     processPercent() {
       let value = this.process / 275 * 100;
       return value.toFixed(2) + '%';
+    }
+  },
+
+  watch: {
+    '$store.state.songs.songIndex': {
+      handler() {
+        this.song = this.$store.getters.currentSong;
+        this.process = 0;
+      }
     }
   },
 }
@@ -152,13 +255,38 @@ export default {
   .container {
     width: 100%;
     height: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 10;
+  }
+
+  .container > .wrapper {
+    width: 100%;
+    height: 100%;
     padding: 30rpx;
     background: #281d38;
     background: linear-gradient(0deg, #281d38 0%, #22192e 30%, #1e1629 100%);    
     box-shadow: inset 0 0 40rpx 10rpx #3d2c53;
     color: #fff;
     @include flex-layout(flex-start, center, column);
-    animation: slideInLeft .6s ease-out 0s;
+
+    &.appear {
+      animation: slideInUp .6s ease-out 0s;
+    }
+
+    &.leave {
+      animation: slideOutDown .6s ease-out 0s;
+    }
+
+    .back {
+      position: absolute;
+      top: 10rpx;
+      left: 35rpx;
+      color: #594277;
+      font-size: 52rpx;
+      font-weight: 600;
+      text-shadow: 1rpx 1rpx 5rpx #b988fa;
+    }
 
     .cover {
       margin-top: 50rpx;
@@ -298,60 +426,7 @@ export default {
       @include flex-center();
       transition: all .5s;
 
-      &.play {
-        margin-top: 50rpx;
-
-        .play {
-          width: 200rpx;
-          height: 200rpx;
-          font-size: 60rpx;
-
-          .bg-circle {
-            transition: box-shadow .5s;
-
-            &.c-blue {
-              box-shadow: 0 0 35rpx 2rpx #4b5dfc;
-            }
-            &.c-dpurple {
-              box-shadow: 0 0 35rpx 2rpx #831af9;
-            }
-            &.c-red {
-              box-shadow: 0 0 35rpx 2rpx #f7277e;
-            }
-            &.c-purple {
-              box-shadow: 0 0 35rpx 2rpx #ae1ecb;
-            }
-            &.c-pink {
-              box-shadow: 0 0 35rpx 2rpx #d523a3;
-            }
-            &.c-dblue {
-              box-shadow: 0 0 40rpx 3rpx #5140ff;
-            }
-          }
-        }
-
-        .pre {
-          left: 12%;
-        }
-
-        .next {
-          right: 12%;
-        }
-
-        .config {
-          top: 50%;
-          transform: translateY(-50%);
-          left: -6%;
-        }
-        
-        .mode {
-          top: 50%;
-          transform: translateY(-50%);
-          right: -6%;
-        }
-      }
-
-      .play {
+      .play-button {
         width: 250rpx;
         height: 250rpx;
         border-radius: 50%;
@@ -422,25 +497,76 @@ export default {
         transition: all .5s;
       }
 
-      .pre {
+      .pre-button {
         left: 0;
       }
 
-      .next {
+      .next-button {
         right: 0;
       }
 
-      .config {
+      .config-button {
         top: 95%;
         left: 10%;
       }
       
-      .mode {
+      .mode-button {
         top: 95%;
         right: 10%;
 
         .icon-infinity {
           font-size: 26rpx;
+        }
+      }
+
+      &.play {
+        .play-button {
+          width: 200rpx;
+          height: 200rpx;
+          font-size: 60rpx;
+
+          .bg-circle {
+            transition: box-shadow .5s;
+
+            &.c-blue {
+              box-shadow: 0 0 35rpx 2rpx #4b5dfc;
+            }
+            &.c-dpurple {
+              box-shadow: 0 0 35rpx 2rpx #831af9;
+            }
+            &.c-red {
+              box-shadow: 0 0 35rpx 2rpx #f7277e;
+            }
+            &.c-purple {
+              box-shadow: 0 0 35rpx 2rpx #ae1ecb;
+            }
+            &.c-pink {
+              box-shadow: 0 0 35rpx 2rpx #d523a3;
+            }
+            &.c-dblue {
+              box-shadow: 0 0 40rpx 3rpx #5140ff;
+            }
+          }
+        }
+
+        .pre-button {
+          left: 12%;
+        }
+
+        .next-button {
+          right: 12%;
+        }
+
+        .config-button {
+          top: 50%;
+          transform: translateY(-50%);
+          left: -6%;
+        }
+        
+        .mode-button {
+          top: 50%;
+          transform: translateY(-50%);
+          right: -6%;
         }
       }
     }

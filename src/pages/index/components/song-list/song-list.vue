@@ -2,55 +2,46 @@
   <view class="container">
     <!-- icon title start -->
     <view class="icon icon-bubble-background">
-      <icon-font iconName="infinity"></icon-font>
+      <view class="iconfont icon-infinity"></view>
     </view>
     <!-- icon title end -->
 
+    <!-- start -->
     <scroll-view class="song-list" scroll-y>
       <view 
         class="song-item" 
         v-for="(song, index) in songList" 
         :key="index"
-        @click="chooseSong(index)"  
+        @click="chooseSong(index)"
+        @changeSong="chooseSong"
       >
-        {{song.name}}
+        {{ song.name }}
       </view>
     </scroll-view>
-
+    <!-- end -->
 
   </view>
 </template>
 
 <script>
-import IconFont from '@/components/icon-font/icon-font.vue';
 
 export default {
-  options: { styleIsolation: 'shared' },
-
-  components: {
-    IconFont
+  created() {
+    // temp
+    // TODO: vue fetchData(dispatch) => callback set songlist
+    this.songList = this.$store.state.songs.songList;
   },
 
   data() {
     return {
-      songList: [
-        {name: '歌曲1', singer: '歌手1'},
-        {name: '歌曲2', singer: '歌手2'},
-        {name: '歌曲3', singer: '歌手3'},
-        {name: '歌曲4', singer: '歌手4'},
-        {name: '歌曲4', singer: '歌手4'},
-        {name: '歌曲4', singer: '歌手4'},
-        {name: '歌曲4', singer: '歌手4'},
-        {name: '歌曲4', singer: '歌手4'},
-        {name: '歌曲4', singer: '歌手4'},
-      ]
+      songList: [],
     }
   },
 
-
   methods: {
     chooseSong(index) {
-
+      this.$store.commit('chooseSong', index);
+      this.$emit('switchView', 'PlayerView')
     }
   },
 }
@@ -67,14 +58,12 @@ export default {
       height: 40%;
       width: 100%;
 
-      & /deep/ .iconfont {
+      .iconfont {
         color: #980baf;
         font-size: 220rpx;
-        // text-shadow:14rpx 14rpx 7rpx #6f14ac;
-        text-shadow: 0 0 10rpx #7c11c4;
+        text-shadow: 0 0 30rpx #8919d4;
       }
     }
-
 
     .song-list {
       width: 100%;
@@ -82,16 +71,16 @@ export default {
 
       .song-item {
         margin: 0 auto;
-        width: 90%;
-        padding: 40rpx 0;
-        text-align: center;
+        width: 85%;
+        padding: 35rpx 0;
+        text-align: left;
+        text-indent: 1em;
         color: #f6f6f7;
-        background: #2c1b40;
         font-weight: 600;
-        margin-top: 18rpx;
         border-radius: 20rpx;
-        box-shadow: inset 0 0 20rpx 18rpx #452c61;
-
+        word-break: keep-all;
+        text-overflow: ellipsis;
+        overflow:hidden;
       }
     }
   }

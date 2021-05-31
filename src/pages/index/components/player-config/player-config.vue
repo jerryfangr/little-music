@@ -1,44 +1,47 @@
 <template>
-  <view class="container animate__animated animate__slideInUp">
-    <view 
-      class="back" 
-      decode='true'
-      @click="$emit('switchView', 'back')"
-      >
-      {{'&lt;'}}
-    </view>
+  <view class="container">
+    <view :class="{'wrapper': true, 'appear': appear, 'leave': !appear}">
 
-    <!-- start -->
-    <view class="config-bar">
-      <view class="bar-list">
-        <view class="bar-item" v-for="(config, index) in configItems" :key="index">
-          
-          <view class="bar-value" :style="{'height': config.value + '%'}"></view>
-
-          <view 
-            class="bar-button"
-            :style="{'bottom': config.value + '%'}"
-            @click="changeItem(index)"
-            @touchmove="updateBarValue($event, index)"
-          >
-            <li class="icon-line"></li>
-            <li class="icon-line"></li>
-            <li class="icon-line"></li>
-          </view>
-
-        </view>
+      <view 
+        class="back" 
+        decode='true'
+        @click="close"
+        >
+        {{'&lt;'}}
       </view>
 
-      <view class="bar-name">{{ configInfo }}</view>
-    </view>
-    <!-- end -->
+      <!-- start -->
+      <view class="config-bar">
+        <view class="bar-list">
+          <view class="bar-item" v-for="(config, index) in configItems" :key="index">
+            
+            <view class="bar-value" :style="{'height': config.value + '%'}"></view>
 
-    <!-- start -->
-    <view class="operate">
-      <button class="save" @click="saveConfig">save</button>
-    </view>
-    <!-- end -->
+            <view 
+              class="bar-button"
+              :style="{'bottom': config.value + '%'}"
+              @click="changeItem(index)"
+              @touchmove="updateBarValue($event, index)"
+            >
+              <li class="icon-line"></li>
+              <li class="icon-line"></li>
+              <li class="icon-line"></li>
+            </view>
 
+          </view>
+        </view>
+
+        <view class="bar-name">{{ configInfo }}</view>
+      </view>
+      <!-- end -->
+
+      <!-- start -->
+      <view class="operate">
+        <button class="save" @click="saveConfig">save</button>
+      </view>
+      <!-- end -->
+
+    </view> 
   </view>
 </template>
 
@@ -50,9 +53,15 @@ export default {
     }
   },
 
+  created() {
+    this.restoreConfig();
+  },
+
   data() {
     return {
       currentConfig: 1,
+
+      appear: true,
 
       configItems: [
         {
@@ -92,6 +101,15 @@ export default {
       this.updateConfig(newConfig);
     },
 
+    restoreConfig () {
+      let storeConfig = this.$store.state.config;
+      this.configItems.forEach(config => {
+        if (storeConfig[config.name] !== undefined) {
+          config.value = storeConfig[config.name];
+        }
+      })
+    },
+
     updateBarValue(event, index) {
       if (index !== this.currentConfig) {
         this.changeItem(index);
@@ -115,6 +133,13 @@ export default {
 			}
 			this.lastX = currentX;
 			this.lastY = currentY;
+    },
+
+    close () {
+      this.appear = false;
+      setTimeout(() => {
+        this.$emit('switchView', 'back')
+      }, 500)
     }
   },
 
@@ -125,9 +150,24 @@ export default {
   .container {
     width: 100%;
     height: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 10;
+  }
+
+  .container > .wrapper {
+    width: 100%;
+    height: 100%;
     background: #1d0f2f;
     position: relative;
-    animation: slideInUp .6s ease-out 0s;
+
+    &.appear {
+      animation: slideInUp .6s ease-out 0s;
+    }
+
+    &.leave {
+      animation: slideOutDown .6s ease-out 0s;
+    }
 
     .back {
       position: absolute;
