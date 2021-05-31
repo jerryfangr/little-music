@@ -115,38 +115,7 @@ export default {
   },
 
   beforeMount() {
-    this.audioContext = this.audioContext || uni.createInnerAudioContext();
-    this.audioContext.autoplay = true;
-    this.audioContext.src = 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-hello-uniapp/2cc220e0-c27a-11ea-9dfb-6da8e309e0d8.mp3';
-    
-    this.audioContext.onCanplay(() => {
-      // loop=true  volume=0.5
-    })
-
-    this.audioContext.onPlay(() => {
-      this.songDuration = Math.ceil(this.audioContext.duration);
-    });
-
-    this.audioContext.onTimeUpdate(() => {
-      let currentTime = Math.ceil(this.audioContext.currentTime);
-      let newTime = this.formatTime(currentTime);
-      if (newTime !== this.currentTime) {
-        let process = currentTime / this.songDuration * this.MAX_PROCESS;
-        this.process = process.toFixed(2);
-        this.currentTime = newTime;
-      }
-    });
-
-    this.audioContext.onEnded((res) => {
-
-    });
-
-    this.audioContext.onError((res) => {
-      console.log(res.errMsg);
-      console.log(res.errCode);
-    });
-
-    this.audioContext.pause();
+    this.loadSong({autoStart: false, startTime: 0});
   },
 
   methods: {
@@ -181,16 +150,92 @@ export default {
 
     changeSong(direction) {
       let songIndex = this.$store.state.songs.songIndex;
-      let index = direction === 'next' ? songIndex + 1 : songIndex - 1;
-      this.$store.commit('chooseSong', index);
+      if (direction === 'next') {
+        this.$store.commit('chooseSong', songIndex + 1);
+      } else {
+        this.$store.commit('chooseSong', songIndex - 1);
+      }
+      this.audioContext?.destroy?.();
+      this.audioContext = null;
+      this.loadSong({autoStart: this.status === 'playing', seek: 0});
+    },
+
+    loadSong(option) {
+      option = option || {};
+      this.audioContext = uni.createInnerAudioContext();
+      this.audioContext.autoplay = true;
+      this.audioContext.src = 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-hello-uniapp/2cc220e0-c27a-11ea-9dfb-6da8e309e0d8.mp3';
+      
+      this.audioContext.onCanplay(() => {
+        // volume=0.5($store.state.config.voice)
+        if (this.mode === 'loop') {
+          this.audioContext.loop = true;
+        }
+      })
+
+      this.audioContext.onPlay(() => {
+        this.songDuration = Math.ceil(this.audioContext.duration);
+        this.waitFor(() => {
+          this.songDuration = Math.ceil(this.audioContext.duration);
+          return this.audioContext.duration !== 0 && this.audioContext.duration !== undefined;
+        }, 10);
+        this.audioContext.startTime = (option.startTime || 0);
+      });
+
+      this.audioContext.onTimeUpdate(() => {
+        console.log('update 1');
+        this.updateTime();
+      });
+
+      this.audioContext.onEnded((res) => {
+        // loop do nothing
+        // !loop && infinity = next song
+        // !loop && random = random song
+      });
+
+      this.audioContext.onError((res) => {
+        console.log(res.errMsg);
+        console.log(res.errCode);
+      });
+
+      !option.autoStart && this.audioContext.pause();
+    },
+
+    waitFor(callback, maxWaitTime) {
+      let timer = setInterval(() => {
+        if(callback()) {
+          clearInterval(timer)
+        }
+      }, 50);
+
+      setTimeout(() => {
+        clearInterval(timer);
+      }, maxWaitTime * 1000)
+    },
+
+    updateTime() {
+      let currentTime = Math.ceil(this.audioContext.currentTime);
+      let newTime = this.formatTime(currentTime);
+      if (newTime !== this.currentTime) {
+        let process = currentTime / this.songDuration * this.MAX_PROCESS;
+        this.process = process.toFixed(2);
+        this.currentTime = newTime;
+      }
     },
 
     jumpProcess(event) {
       let x = event.touches[0].clientX - 55;
       x = x < 0 ? 0 : x;
-      this.process = x / 300 * 275;
+      this.process = x / 300 * this.MAX_PROCESS;
 
-      // seek(position)  跳转到指定位置，单位 s
+      let timePosition = this.songDuration * x / 300;
+      
+      this.audioContext.pause();
+      this.audioContext.onSeeked(() => {
+        this.audioContext.play();
+        this.audioContext.offSeeked();
+      });
+      this.audioContext.seek(Math.floor(timePosition));
     },
 
     updateBarValue(event) {
