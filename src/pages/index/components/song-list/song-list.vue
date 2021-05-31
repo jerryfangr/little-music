@@ -80,7 +80,7 @@ export default {
         border-radius: 20rpx;
         word-break: keep-all;
         text-overflow: ellipsis;
-        overflow:hidden;
+        overflow: hidden;
       }
     }
   }

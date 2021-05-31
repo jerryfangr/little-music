@@ -387,6 +387,16 @@ export default {
 
     .title {
       margin-top: 35rpx;
+      width: 540rpx;
+      text-align: center;
+
+      .song-name,
+      .author,
+      .lyric {
+        word-break: keep-all;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
 
       .song-name {
         margin-top: 0rpx;
