@@ -39,9 +39,23 @@
 
       <!-- start -->
       <view :class="{'title': true, 'play': status === 'playing' }">
-        <view class="song-name">{{ song.name }}</view>
-        <view class="author">{{ song.singer }}</view>
-        <view class="lyric">This is lyric</view>
+
+        <view class="song-name">{{ song.name || 'Unknow' }}</view>
+
+        <view class="author">{{ song.singer || 'Unknow' }}</view>
+
+        <!-- 参考之前163music 案例 -->
+        <view class="lyric">
+          <li v-if="song.lyrics.length === 0">No Lyric</li>
+          <li v-for="(lyric, index) in song.lyrics" 
+            class="lyric deactive" 
+            :key="index"
+          >
+            {{ lyric }}
+          </li>
+          <!-- default bottom 0 -->
+          <!-- deactive bottom -100% -->
+        </view>
       </view>
       <!-- end -->
 
@@ -97,7 +111,7 @@ export default {
 
   data() {
     return {
-      song: {},
+      song: {lyrics: []},
       status: 'choose',
       mode: 'infinity',
       process: 0,
@@ -155,23 +169,34 @@ export default {
       } else {
         this.$store.commit('chooseSong', songIndex - 1);
       }
-      this.audioContext?.destroy?.();
+      this.audioContext?.destroy();
       this.audioContext = null;
-      this.loadSong({autoStart: this.status === 'playing', seek: 0});
+    
+      this.loadSong({ autoStart: this.status === 'playing', seek: 0});
     },
 
     loadSong(option) {
+      this.$store.dispatch('getToken', (token) => {
+        let songUrl = 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-hello-uniapp/2cc220e0-c27a-11ea-9dfb-6da8e309e0d8.mp3';
+        if(this.song.url && token) {
+          songUrl = this.song.url + '?token=' + token;
+        }
+        option.url = songUrl;
+        this.configSong(option);
+      });
+    },
+
+    configSong(option) {
       option = option || {};
       this.audioContext = uni.createInnerAudioContext();
       this.audioContext.autoplay = true;
-      this.audioContext.src = 'https://bjetxgzv.cdn.bspapp.com/VKCEYUGU-hello-uniapp/2cc220e0-c27a-11ea-9dfb-6da8e309e0d8.mp3';
-      
+      this.audioContext.src = option.url;      
       this.audioContext.onCanplay(() => {
         // volume=0.5($store.state.config.voice)
         if (this.mode === 'loop') {
           this.audioContext.loop = true;
         }
-      })
+      });
 
       this.audioContext.onPlay(() => {
         this.songDuration = Math.ceil(this.audioContext.duration);
@@ -183,7 +208,6 @@ export default {
       });
 
       this.audioContext.onTimeUpdate(() => {
-        console.log('update 1');
         this.updateTime();
       });
 
@@ -265,6 +289,9 @@ export default {
 
     close () {
       this.appear = false;
+      this.audioContext?.pause();
+      this.audioContext?.destroy();
+
       setTimeout(() => {
         this.$emit('switchView', 'back')
       }, 500)

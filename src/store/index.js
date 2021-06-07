@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import request from '../utils/reuqest';
+import API from '@/assets/api';
 
 Vue.use(Vuex)
 
@@ -12,25 +14,21 @@ const store = new Vuex.Store({
 
     songs: {
       songList: [
-        { name: '歌曲1asdsadasdsadsadsadasdasdasdsadsadasdasdsadsadasdsa', singer: '歌手1' },
-        { name: '歌曲2', singer: '歌手2' },
-        { name: '歌曲3', singer: '歌手3' },
-        { name: '歌曲4', singer: '歌手5' },
-        { name: '歌曲5', singer: '歌手5' },
-        { name: '歌曲6', singer: '歌手6' },
-        { name: '歌曲7', singer: '歌手7' },
-        { name: '歌曲8', singer: '歌手8' },
-        { name: '歌曲9', singer: '歌手9' },
+        { name: '占位歌曲1', singer: '歌手1' },
+        { name: '占位歌曲2', singer: '歌手2' },
+        { name: '占位歌曲3', singer: '歌手3' },
       ],
 
-      songIndex: undefined
+      songIndex: undefined,
+
+      token: undefined
     }
   },
 
   getters: {
     currentSong({ songs }) {
       return songs.songList[songs.songIndex]
-    }
+    },
   },
 
   mutations: {
@@ -42,9 +40,12 @@ const store = new Vuex.Store({
 
     chooseSong({ songs }, songIndex) {
       if (songIndex >= 0 && songIndex < songs.songList.length) {
-        console.log('new songIndex', songIndex);
         songs.songIndex = songIndex;
       }
+    },
+
+    setSongs({ songs }, songList) {
+      songs.songList = songList;
     }
   },
 
@@ -68,6 +69,32 @@ const store = new Vuex.Store({
         },
         fail
       })
+    },
+
+    fetchMusic({ commit }) {
+      return request({
+        url: API.music,
+        title: '载入歌曲..',
+        limitTime: 20 * 1000,
+      }).then(data => {
+        let songList = data.result || {};
+        let songListCopy = JSON.parse(JSON.stringify(songList));
+        songListCopy.forEach(song => {
+          song.url = API.base + song.url;
+        });
+
+        commit('setSongs', songListCopy);
+        return songListCopy;
+      })
+    },
+
+    getToken(store, callback) {
+      return uni.request({
+        url: API.token,
+        success: (res) => {
+          callback(res.data?.result?.token)
+        }
+      });
     }
   },
 

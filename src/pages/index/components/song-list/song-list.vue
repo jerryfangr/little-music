@@ -27,9 +27,9 @@
 
 export default {
   created() {
-    // temp
-    // TODO: vue fetchData(dispatch) => callback set songlist
-    this.songList = this.$store.state.songs.songList;
+    this.$store.dispatch('fetchMusic').then((songList) => {
+      this.songList = songList;
+    })
   },
 
   data() {
