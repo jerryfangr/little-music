@@ -187,8 +187,8 @@ export default {
       this.audioContext = uni.createInnerAudioContext();
       this.audioContext.autoplay = true;
       this.audioContext.src = option.url;
+      this.audioContext.volume = this.$store.state.config.volume;
       this.audioContext.onCanplay(() => {
-        // volume=0.5($store.state.config.voice)
         if (this.mode === 'loop') {
           this.audioContext.loop = true;
         }
@@ -209,8 +209,11 @@ export default {
       });
 
       this.audioContext.onEnded((res) => {
-        // infinity = next song
-        // random = random song
+        if (this.mode === 'infinity') {
+          this.changeSong('next');
+        } else if (this.mode === 'random') {
+
+        }
       });
 
       this.audioContext.onError((res) => {
@@ -349,7 +352,14 @@ export default {
         this.song = this.$store.getters.currentSong;
         this.process = 0;
       }
-    }
+    },
+
+    '$store.state.config.volume': {
+      handler() {
+        let volume = this.$store.state.config.volume / 100;
+        this.audioContext.volume = volume;
+      }
+    },
   },
 }
 </script>

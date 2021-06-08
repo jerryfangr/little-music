@@ -69,7 +69,7 @@ export default {
           value: 50
         },
         {
-          name: 'voice',
+          name: 'volume',
           value: 50
         },
         {
@@ -99,6 +99,7 @@ export default {
       })
 
       this.updateConfig(newConfig);
+      this.close();
     },
 
     restoreConfig () {

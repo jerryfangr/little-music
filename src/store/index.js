@@ -8,8 +8,8 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
   state: {
     config: {
-      voice: 100,
-      playMode: 'random'
+      volume: 100,
+      playMode: 'infinity'
     },
 
     songs: {
