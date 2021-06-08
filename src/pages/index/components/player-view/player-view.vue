@@ -14,6 +14,9 @@
 
       <!-- start -->
       <view :class="{'cover': true, 'play': status === 'playing' }">
+          <view class="cover-image" v-if="status !== 'playing'">
+            <image class="image" v-if="song.cover" :src="song.cover" alt="" srcset=""></image>
+          </view>
           <view class="iconfont icon-music-1" v-if="status === 'playing'"></view>
           <view class="iconfont icon-music-2" v-if="status === 'playing'"></view>
       </view>
@@ -46,19 +49,11 @@
 
         <!-- 参考之前163music 案例 -->
         <view class="lyric">
-          <li v-if="song.lyrics.length === 0">No Lyric</li>
-          <li v-for="(lyric, index) in song.lyrics" 
-            class="lyric deactive" 
-            :key="index"
-          >
-            {{ lyric }}
-          </li>
-          <!-- default bottom 0 -->
-          <!-- deactive bottom -100% -->
+          <li v-if="song.lyrics === undefined || song.lyrics.length === 0">No Lyric...</li>
+          <li v-else>{{ currentLyric }}</li>
         </view>
       </view>
       <!-- end -->
-
 
       <!-- start -->
       <view :class="{'operate': true, 'play': status === 'playing' }">
@@ -114,6 +109,7 @@ export default {
       song: {lyrics: []},
       status: 'choose',
       mode: 'infinity',
+      lyricIndex: 0,
       process: 0,
       MAX_PROCESS: 275,
       appear: true,
@@ -190,7 +186,7 @@ export default {
       option = option || {};
       this.audioContext = uni.createInnerAudioContext();
       this.audioContext.autoplay = true;
-      this.audioContext.src = option.url;      
+      this.audioContext.src = option.url;
       this.audioContext.onCanplay(() => {
         // volume=0.5($store.state.config.voice)
         if (this.mode === 'loop') {
@@ -209,12 +205,12 @@ export default {
 
       this.audioContext.onTimeUpdate(() => {
         this.updateTime();
+        this.updateLyric();
       });
 
       this.audioContext.onEnded((res) => {
-        // loop do nothing
-        // !loop && infinity = next song
-        // !loop && random = random song
+        // infinity = next song
+        // random = random song
       });
 
       this.audioContext.onError((res) => {
@@ -244,6 +240,30 @@ export default {
         let process = currentTime / this.songDuration * this.MAX_PROCESS;
         this.process = process.toFixed(2);
         this.currentTime = newTime;
+      }
+    },
+
+    updateLyric() {
+      let currentTime = this.audioContext.currentTime - 0;
+      if (this.lyricIndex === 0) {
+        this.lyricIndex = 0;
+        for (let i = 0; i < this.song.lyrics.length; i++) {
+          const lyric = this.song.lyrics[i];
+          if (currentTime <= lyric[0]) {
+            this.lyricIndex = i;
+            return;
+          }
+        }
+        this.lyrics = -1;
+      } else if (this.lyricIndex !== -1) {
+        let lyric = this.song.lyrics[this.lyricIndex+1];
+        if (lyric === undefined) {
+          this.lyricIndex = -1;
+          return;
+        }
+        if (lyric[0] <= currentTime) {
+          this.lyricIndex++;
+        }
       }
     },
 
@@ -309,6 +329,17 @@ export default {
     processPercent() {
       let value = this.process / 275 * 100;
       return value.toFixed(2) + '%';
+    },
+
+    currentLyric() {
+      if( this.song.lyrics && this.song.lyrics.length !== 0 ) {
+        let index = this.lyricIndex;
+        if (index === -1) {
+          index = this.song.lyrics.length - 1;
+        }
+        return this.song.lyrics[index][1];
+      }
+      return '';
     }
   },
 
@@ -392,6 +423,16 @@ export default {
         }
       }
 
+      .cover-image {
+        width: 100%;
+        height: 100%;
+        border-radius: 50rpx;
+        overflow: hidden;
+        .image {
+          width: 100%;
+          height: 100%;
+        }
+      }
     }
 
     .process {
@@ -485,6 +526,8 @@ export default {
         display: none;
         font-size: 30rpx;
         font-weight: 600;
+        height: 43rpx;
+        overflow: hidden;
       }
 
       &.play {

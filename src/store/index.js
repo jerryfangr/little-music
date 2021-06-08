@@ -15,8 +15,6 @@ const store = new Vuex.Store({
     songs: {
       songList: [
         { name: '占位歌曲1', singer: '歌手1' },
-        { name: '占位歌曲2', singer: '歌手2' },
-        { name: '占位歌曲3', singer: '歌手3' },
       ],
 
       songIndex: undefined,
@@ -27,7 +25,22 @@ const store = new Vuex.Store({
 
   getters: {
     currentSong({ songs }) {
-      return songs.songList[songs.songIndex]
+      let song = songs.songList[songs.songIndex];
+
+      let regex = /\[([\d :：.  ]+)\](.+)/i;
+      song.lyrics = song.lyric.split('\n').map(content => {
+        let result = [];
+        let matches = content.match(regex);
+        if (matches) {
+          let timeParts = matches[1].split(/[:：]{1}/);
+          let secondsFormat = (timeParts[0] - 0) * 60 + (timeParts[1] - 0);
+          result = [secondsFormat, matches[2]]
+        } else {
+          result = [undefined, content]
+        }
+        return result;
+      });
+      return song;
     },
   },
 
