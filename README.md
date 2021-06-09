@@ -41,3 +41,6 @@ yarn run dev:mp-weixin
 
 * Drop folder(/dist/dev/mp-weixin) to your [Weixin DevTools](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
 
+### step 4: open a test server(support music file)
+
+* You can use this [sample](https://github.com/jerryfangr/simple-music-server) 
