@@ -39,5 +39,5 @@ yarn run dev:mp-weixin
 
 ### step 3: open program
 
-* Drop folder(/dist/dev/mp-weixin) to you [Weixin DevTools](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
+* Drop folder(/dist/dev/mp-weixin) to your [Weixin DevTools](https://developers.weixin.qq.com/miniprogram/dev/devtools/download.html)
 
