@@ -165,9 +165,10 @@ export default {
       } else {
         this.$store.commit('chooseSong', songIndex - 1);
       }
+
       this.audioContext?.destroy();
       this.audioContext = null;
-    
+      this.lyricIndex = 0;
       this.loadSong({ autoStart: this.status === 'playing', seek: 0});
     },
 
@@ -335,7 +336,7 @@ export default {
     },
 
     currentLyric() {
-      if( this.song.lyrics && this.song.lyrics.length !== 0 ) {
+      if( this.song.lyrics && this.song.lyrics.length > 0 ) {
         let index = this.lyricIndex;
         if (index === -1) {
           index = this.song.lyrics.length - 1;

@@ -40,6 +40,7 @@ const store = new Vuex.Store({
         }
         return result;
       });
+      
       return song;
     },
   },
